@@ -1,31 +1,35 @@
-import { useState } from 'react';
+import Entry from "./Entry.js"
+
+
+const gpa_mapping = {
+  "A+": 12,
+  "A": 11,
+  "A-": 10,
+  "B+": 9,
+  "B": 8,
+  "B-": 7,
+  "C+": 6,
+  "C": 5,
+  "C-": 4,
+  "D+": 3,
+  "D": 2,
+  "D-": 1
+}
 
 function App() {
-  const [transcript, setTranscript] = useState('');
-  const [cGPA, setCGPA] = useState(null);
-
-  const handleSubmit = async () => {
-    const response = await fetch('http://localhost:8081/parse-transcript', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transcriptText: transcript }),
-    });
-    const data = await response.json();
-    setCGPA(data.cGPA);
-  };
+  function search(formData) {
+    const course = formData.get("course");
+    const grade = formData.get("grade");
+    const gpa = gpa_mapping[grade]
+    const gpa_four_point = gpa/3
+    alert(`Your grade for ${course} is ${gpa_mapping[grade]}, which is gpa: ${gpa_four_point.toFixed(1)}`);
+  }
 
   return (
-    <div style={{ padding: 20 }}>
-      <textarea
-        placeholder="Paste your transcript here"
-        value={transcript}
-        onChange={(e) => setTranscript(e.target.value)}
-        style={{ width: '100%', height: 200 }}
-      />
-      <br />
-      <button onClick={handleSubmit}>Calculate cGPA</button>
-      {cGPA && <h2>Your cGPA is: {cGPA}</h2>}
-    </div>
+    <form action={search}>
+      <Entry />
+      <button type="submit">Search</button>
+    </form>
   );
 }
 

@@ -11,11 +11,6 @@ const PORT = 8081;
 app.use(express.json());
 app.use(cors());
 
-app.get('/test', (req, res) => {
-  res.json({ message: 'Hello from Express!' });
-});
-
-
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
@@ -27,3 +22,11 @@ app.post('/parse-transcript', (req, res) => {
 
   res.json({ cGPA: 3.87 });
 });
+
+app.get('/test', (req, res) => {
+  res.json({ message: 'Hello from Express!' });
+});
+
+app.post("/submit-grades", (req, res) => [
+    
+])
