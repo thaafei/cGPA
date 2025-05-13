@@ -16,12 +16,14 @@ const gpa_mapping = {
 }
 
 interface Entry {
+  key: number;
   courseName: string;
   grade: string;
 }
 
 function MyEntries() {
-  const [entries, setEntry] = useState([]);
+  const [entries, setEntry] = useState(Array<Entry>);
+  const [result, showResult] = useState(false);
 
   const addEntry = () => {
     setEntry([...entries, { id: Date.now() }]);
@@ -31,26 +33,21 @@ function MyEntries() {
     setEntry(entries.filter(entries => entries.id !== id));
   };
 
-  const submitEntries = () => {
-    let sum; 
-    entries.forEach((entry, index, arr) => {
-      console.log(entry)
-    })
-  };
+  const submitEntries = (entries) => {
+    <SubmitEntries entries={entries}/>
+  }
 
   return (
     <div>
       <button onClick={addEntry}>Add Entry</button>
-      {entries.map(entry => (
-        <NewEntry key={entry.id} onRemove={() => removeEntry(entry.id)} />
-      ))}
-      <button onClick={submitEntries}>Submit</button>
+      {entries.map(entry => (<Entry key={entry.id} onRemove={() => removeEntry(entry.id)} />))}
+      <button onClick={submitEntries(entries)}>Submit</button>
     </div>
   );
 }
 
-function NewEntry({ onRemove }) {
-  const [courseName, setCourseName] = useState('')
+function Entry({ onRemove }){
+  const [courseName, setCourseName] = useState()
   const [grade, setGrade] = useState('')
 
   const handleCourseName = (event) => {
@@ -65,11 +62,28 @@ function NewEntry({ onRemove }) {
       <input type="text" name="course" value={courseName} onChange={handleCourseName}/>
       <input type="grade" name="grade" value={grade} onChange={handleGrade}/>
       <button onClick={onRemove}>Remove</button>
-      <p>{courseName}</p>
-      <p>{grade}</p>
     </div>
   );
 }
-  
+
+function SubmitEntries(entries: Array<Entry>){
+  let numEntry = entries.length
+  let totalGPA = 0
+  for (let entryID in entries){
+    let entry = Entry[entryID]
+    let result: number;
+    if (Number.isNaN(entry.grade)){
+      result = gpa_mapping[entry.grade]
+    }else{
+      result = Number(entry.grade)
+    }
+    totalGPA += result
+  }
+  return (
+    <div>
+      <p>Your GPA is {totalGPA/numEntry}</p>
+    </div>
+  );
+}
   
 export default MyEntries;
