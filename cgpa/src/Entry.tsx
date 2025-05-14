@@ -10,7 +10,7 @@ interface EntryProp {
 }
 export default function Entry({key, id,course, grade, updateCourse, updateGrade, onRemove}): EntryProp {
     return (
-        <li>
+        <div class="mb-3 p-3 border rounded">
             <input
                 type="text"
                 placeholder="Course Name"
@@ -24,6 +24,6 @@ export default function Entry({key, id,course, grade, updateCourse, updateGrade,
                 onChange={(e) => updateGrade(id, e.target.value)}
             />
             <button onClick={() => onRemove(id)}>Remove</button>
-        </li>
+        </div>
     )
 }

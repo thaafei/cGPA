@@ -1,47 +1,35 @@
 import React, { useState } from 'react';
+import axios from 'axios'
 import Entry from "./Entry.tsx"
+import Grade from "./Grade.tsx"
+import UploadForm from './UploadForm.tsx';
+import './App.css';
+
 interface EntryData {
     key: number
     id: number
     course: string
     grade: string
 }
-const gradeMap = {
-    "A+": 12,
-    "A": 11,
-    "A-": 10,
-    "B+": 9,
-    "B": 8,
-    "B-": 7,
-    "C+": 6,
-    "C": 5,
-    "C-": 4,
-    "D+": 3,
-    "D": 2,
-    "D-": 1,
-    "F": 0
+interface Grade{
+    four_scale: number
+    twelve_scale: number
 }
+
 export default function EntryContainer() {
     const [index, updateIndex] = useState(0);
     const [entries, editEntries] = useState<EntryData[]>([]);
-    const [result, setResult] = useState<number | null>(null);
+    const [grade, setGrade] = useState<Grade>(null);
+    const [showGrade, setShowGrade] = useState(false)
 
     function newEntry() {
+        setShowGrade(false)
         editEntries([...entries, {key: index, id: index, course: "", grade: ""}])
         updateIndex(index + 1)
     }
-    
-
-    const submitEntries = () => {
-        const total = entries.reduce(
-            (sum, entry) => {
-                let gradeValue = gradeMap[entry.grade]
-                return sum + gradeValue
-            }, 0);
-        setResult(total);
-      };
 
     const updateCourse = (id: number, value: string) => {
+        setShowGrade(false)
         editEntries(
             entries.map((entry) =>
             entry.id === id ? { ...entry, course: value } : entry
@@ -50,6 +38,7 @@ export default function EntryContainer() {
     };
 
     const updateGrade = (id: number, value: string) => {
+        setShowGrade(false)
         editEntries(
             entries.map((entry) =>
             entry.id === id ? { ...entry, grade: value } : entry
@@ -58,31 +47,50 @@ export default function EntryContainer() {
     };
 
     const removeEntry = (id: number) => {
+        setShowGrade(false)
         editEntries(entries.filter((entry) => entry.id !== id));
       };
 
+    async function calculateGrades(e) {
+        e.preventDefault()
+        try{
+            let response = await axios.post("http://localhost:8081/calculate", {entries})
+            setGrade({
+                four_scale: response.data.four_scale,
+                twelve_scale: response.data.twelve_scale
+            })
+            setShowGrade(true)
+        }catch(error){
+            console.log(error)
+        }
+    }
+
     return (
-        <>
-            <ul>
-            {entries.map(entry => (
-                <Entry
-                    key={entry.id}
-                    id={entry.id}
-                    course={entry.course}
-                    grade={entry.grade}
-                    updateCourse={updateCourse}
-                    updateGrade={updateGrade}
-                    onRemove={removeEntry}/>
-                ))
-            }
-            </ul>
-            <button onClick={newEntry}>Add New Entry</button>
-            <button onClick={submitEntries}>Submit</button>
-            {result !== null && (
-                <div>
-                <h3>Total Grade Sum: {Math.round(result/entries.length)}</h3>
+        <div class="container-fluid d-flex flex-column" style={{
+            height: '100vh',
+            overflowY: 'auto'
+        }}>  
+            <div class="row">
+                <div class="col-md">
+                    {entries.map(entry => (
+                        <Entry
+                            key={entry.id}
+                            id={entry.id}
+                            course={entry.course}
+                            grade={entry.grade}
+                            updateCourse={updateCourse}
+                            updateGrade={updateGrade}
+                            onRemove={removeEntry}/>
+                        ))
+                    }
                 </div>
-            )}
-        </>
+                <div class="col-md">
+                    <button class="new-btn" onClick={newEntry}>New Class</button>
+                    <button class="submit-btn" onClick={calculateGrades}>Submit</button>
+                    <UploadForm/>
+                    <Grade showGrade={showGrade} grade={grade}/>
+                </div>
+            </div>
+        </div>
     )
 }
