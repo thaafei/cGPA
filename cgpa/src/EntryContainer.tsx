@@ -66,31 +66,47 @@ export default function EntryContainer() {
     }
 
     return (
-        <div class="container-fluid d-flex flex-column" style={{
-            height: '100vh',
-            overflowY: 'auto'
-        }}>  
-            <div class="row">
-                <div class="col-md">
-                    {entries.map(entry => (
-                        <Entry
-                            key={entry.id}
-                            id={entry.id}
-                            course={entry.course}
-                            grade={entry.grade}
-                            updateCourse={updateCourse}
-                            updateGrade={updateGrade}
-                            onRemove={removeEntry}/>
-                        ))
-                    }
-                </div>
-                <div class="col-md">
-                    <button class="new-btn" onClick={newEntry}>New Class</button>
-                    <button class="submit-btn" onClick={calculateGrades}>Submit</button>
-                    <UploadForm/>
-                    <Grade showGrade={showGrade} grade={grade}/>
-                </div>
-            </div>
+  <div className="container-fluid" style={{ height: "82vh" }}>
+    <div className="row h-100">
+      {/* Left Column */}
+      <div
+        className="col-lg-6 entries-input"
+        style={{
+          height: '100%',
+          overflowY: 'auto'
+        }}
+      >
+        {entries.map((entry) => (
+          <Entry
+            key={entry.id}
+            id={entry.id}
+            course={entry.course}
+            grade={entry.grade}
+            updateCourse={updateCourse}
+            updateGrade={updateGrade}
+            onRemove={removeEntry}
+          />
+        ))}
+      </div>
+
+      {/* Right Column */}
+      <div
+        className="col-lg-6 d-flex justify-content-center align-items-center"
+        style={{ height: '100%' }}
+      >
+        <div>
+          <Grade showGrade={showGrade} grade={grade} className="container py-5" />
+          <button className="new-btn" onClick={newEntry}>
+            New Class
+          </button>
+          <button className="submit-btn" onClick={calculateGrades}>
+            Submit
+          </button>
+          <UploadForm />
         </div>
-    )
+      </div>
+    </div>
+  </div>
+);
+
 }

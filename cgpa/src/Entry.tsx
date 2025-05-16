@@ -10,7 +10,7 @@ interface EntryProp {
 }
 export default function Entry({key, id,course, grade, updateCourse, updateGrade, onRemove}): EntryProp {
     return (
-        <div class="mb-3 p-3 border rounded">
+        <div class="p-3 border rounded">
             <input
                 type="text"
                 placeholder="Course Name"
