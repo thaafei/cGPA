@@ -68,7 +68,6 @@ export default function EntryContainer() {
     return (
   <div className="container-fluid" style={{ height: "82vh" }}>
     <div className="row h-100">
-      {/* Left Column */}
       <div
         className="col-lg-6 entries-input"
         style={{
@@ -88,8 +87,6 @@ export default function EntryContainer() {
           />
         ))}
       </div>
-
-      {/* Right Column */}
       <div
         className="col-lg-6 d-flex justify-content-center align-items-center"
         style={{ height: '100%' }}

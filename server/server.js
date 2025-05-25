@@ -1,9 +1,9 @@
 const express = require("express");
 const dotenv = require("dotenv")
-const cors = require("cors")
+const cors = require("cors");
+const fs = require('fs')
+const pdf = require('pdf-parse');
 dotenv.config()
-// const MONGO_PW = process.env.MONGO_PW;
-// const uri = `mongodb+srv://thaafei:${MONGO_PW}@cluster0.bu4d4r6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 const app = express();
 const PORT = 8081;
@@ -47,15 +47,51 @@ app.post("/calculate", (req, res) => {
   })
 
 app.post('/parse-transcript', (req, res) => {
-  const { transcriptText } = req.body;
-  
-  console.log(transcriptText);
+  const { file_path } = req.body;
+  let dataBuffer = fs.readFileSync(file_path)
+  pdf(dataBuffer).then((result) => parseTranscript(result.text, res));
 });
 
 app.get('/test', (req, res) => {
   res.json({ message: 'Hello from Express!' });
 });
 
-app.post("/submit-grades", (req, res) => [
-    
-])
+function parseTranscript(transcript_string, res){
+  let pattern = /(?=---\s*\d{4}\s+[A-Za-z]+(?:\/[A-Za-z]+)*\s*---)/;
+  let semesters = transcript_string.split(pattern);
+  semesters.shift();
+  let result = [];
+  semesters.forEach(semester => {
+    let subresult = semester.split('\n');
+    let first_course = true
+    let course = ""
+    let credits = ""
+    let next_mark = false
+    console.log(semester)
+    subresult.forEach(line => {
+      if (first_course){
+        if (/[A-Z]{4,}\s\d[A-Za-z][A-Za-z0-9]\d[A-Za-z]?/.test(line)) {
+          course = line
+        }else if (/\d\.\d{2}\/\d\.\d{2}/.test(line)) {
+          credits = line
+        }else if (line === "Grade"){
+          next_mark = true
+        }else if (next_mark){
+          let grade = line
+          result.push({ course, credits, grade })
+          first_course = false
+        }
+      }else{
+        const line_pattern = /([A-Z]{4,}\s\d[A-Za-z][A-Za-z0-9]\d[A-Za-z]?)\s.*?(\d\.\d{2}\/\d\.\d{2})([A-Z+-]{1,4})?/
+        const match = line.match(line_pattern)
+        if (match) {
+          const course = match[1];
+          const credits = match[2];
+          const grade = match[3];
+          result.push({ course, credits, grade })
+        }
+      }
+    });
+  });
+  res.json({message: result})
+}
