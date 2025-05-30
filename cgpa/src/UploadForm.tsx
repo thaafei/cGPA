@@ -17,9 +17,14 @@ export default function UploadForm(newEntry){
                     'content-type': 'multipart/form-data',
                 },
             };
-            axios.post(url, formData, config).then((response) => {
-                console.log(response.data);
-            });
+            try{
+                axios.post(url, formData, config).then((response) => {
+                    let entries = response.data
+                    update_entries(entries)
+                })
+            }catch{
+                console.log("error")
+            }
         }
     };
 
@@ -41,19 +46,7 @@ export default function UploadForm(newEntry){
       <div className="input-group">
         <input id="file" type="file" onChange={handleFileChange} />
       </div>
-      {file && (
-        <section>
-          File details:
-          <ul>
-            <li>Name: {file.name}</li>
-            <li>Type: {file.type}</li>
-            <li>Size: {file.size} bytes</li>
-          </ul>
-        </section>
-      )}
-
-      {file && (
-        <button 
+      {file && (<button 
           onClick={handleUpload}
           className="submit"
         >Upload a file</button>
