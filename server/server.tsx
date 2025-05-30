@@ -3,6 +3,8 @@ const dotenv = require("dotenv")
 const cors = require("cors");
 const fs = require('fs')
 const pdf = require('pdf-parse');
+const multer = require("multer");
+
 dotenv.config()
 
 const app = express();
@@ -46,17 +48,21 @@ app.post("/calculate", (req, res) => {
     res.json({four_scale: cgpa_as_four_scale, twelve_scale: cgpa_as_twelve_scale})
   })
 
-app.post('/parse-transcript', (req, res) => {
-  const { file_path } = req.body;
-  let dataBuffer = fs.readFileSync(file_path)
-  pdf(dataBuffer).then((result) => parseTranscript(result.text, res));
-});
+const storage = multer.memoryStorage(); 
+const upload = multer({ storage: storage });
 
-app.get('/test', (req, res) => {
-  res.json({ message: 'Hello from Express!' });
+app.post('/parse-transcript', upload.single("file"), (req, res) => {
+  try {
+    const dataBuffer = req.file.buffer;
+    pdf(dataBuffer).then((result) => parseTranscript(result.text, res));
+  }catch{
+    res.json({message: "Error"})
+  }
+    
 });
 
 function parseTranscript(transcript_string, res){
+  console.log("parsing transcript")
   let pattern = /(?=---\s*\d{4}\s+[A-Za-z]+(?:\/[A-Za-z]+)*\s*---)/;
   let semesters = transcript_string.split(pattern);
   semesters.shift();
@@ -93,5 +99,6 @@ function parseTranscript(transcript_string, res){
       }
     });
   });
+  console.log("parsing complete")
   res.json({message: result})
 }

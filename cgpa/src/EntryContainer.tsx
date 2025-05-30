@@ -22,9 +22,9 @@ export default function EntryContainer() {
     const [grade, setGrade] = useState<Grade>(null);
     const [showGrade, setShowGrade] = useState(false)
 
-    function newEntry() {
+    function newEntry( course: "", grade: "") {
         setShowGrade(false)
-        editEntries([...entries, {key: index, id: index, course: "", grade: ""}])
+        editEntries([...entries, {key: index, id: index, course: course, grade: grade}])
         updateIndex(index + 1)
     }
 
@@ -99,7 +99,7 @@ export default function EntryContainer() {
           <button className="submit-btn" onClick={calculateGrades}>
             Submit
           </button>
-          <UploadForm />
+          <UploadForm newEntry={newEntry}/>
         </div>
       </div>
     </div>
