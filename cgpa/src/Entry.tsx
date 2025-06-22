@@ -1,6 +1,5 @@
 import React from "react";
 interface EntryProp {
-    key: number,
     id: number,
     course: string
     grade: string
@@ -8,9 +7,9 @@ interface EntryProp {
     updateGrade: (key: number, value: string) => void
     onRemove: (key: number) => void
 }
-export default function Entry({key, id,course, grade, updateCourse, updateGrade, onRemove}): EntryProp {
+export default function Entry({id, course, grade, updateCourse, updateGrade, onRemove}): EntryProp {
     return (
-        <div class="p-3 border rounded">
+        <div className="p-3 border rounded">
             <input
                 type="text"
                 placeholder="Course Name"

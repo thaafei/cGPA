@@ -5,45 +5,47 @@ import Grade from "./Grade.tsx"
 import UploadForm from './UploadForm.tsx';
 import './App.css';
 
-interface EntryData {
-    key: number
-    id: number
-    course: string
-    grade: string
-}
 interface Grade{
     four_scale: number
     twelve_scale: number
 }
 
 export default function EntryContainer() {
-    const [index, updateIndex] = useState(0);
-    const [entries, editEntries] = useState<EntryData[]>([]);
+    const [entries, editEntries] = useState([]);
     const [grade, setGrade] = useState<Grade>(null);
     const [showGrade, setShowGrade] = useState(false)
 
-    function newEntry( course: "", grade: "") {
-        setShowGrade(false)
-        editEntries([...entries, {key: index, id: index, course: course, grade: grade}])
-        updateIndex(index + 1)
+    function newEntries(pdfEntries){
+      pdfEntries.forEach((entry) =>  entry["id"] = getUID())
+      editEntries(prevEntries => [...prevEntries, ...pdfEntries])
+      console.log(entries)
+      console.log("test")
+    }
+
+    function newEntry({course, grade}) {
+      setShowGrade(false)
+      editEntries(prevEntries => [
+        ...prevEntries,
+        { id: getUID(), course, grade }
+      ]);
     }
 
     const updateCourse = (id: number, value: string) => {
-        setShowGrade(false)
-        editEntries(
-            entries.map((entry) =>
-            entry.id === id ? { ...entry, course: value } : entry
-            )
-        );
+      setShowGrade(false)
+      editEntries(
+        entries.map((entry) =>
+        entry.id === id ? { ...entry, course: value } : entry
+        )
+      );
     };
 
     const updateGrade = (id: number, value: string) => {
-        setShowGrade(false)
-        editEntries(
-            entries.map((entry) =>
-            entry.id === id ? { ...entry, grade: value } : entry
-            )
-        );
+      setShowGrade(false)
+      editEntries(
+          entries.map((entry) =>
+          entry.id === id ? { ...entry, grade: value } : entry
+          )
+      );
     };
 
     const removeEntry = (id: number) => {
@@ -65,6 +67,10 @@ export default function EntryContainer() {
         }
     }
 
+    function getUID(){
+      return Date.now().toString(36) + Math.random().toString(36);
+    }
+
     return (
   <div className="container-fluid" style={{ height: "82vh" }}>
     <div className="row h-100">
@@ -77,7 +83,6 @@ export default function EntryContainer() {
       >
         {entries.map((entry) => (
           <Entry
-            key={entry.id}
             id={entry.id}
             course={entry.course}
             grade={entry.grade}
@@ -99,7 +104,7 @@ export default function EntryContainer() {
           <button className="submit-btn" onClick={calculateGrades}>
             Submit
           </button>
-          <UploadForm newEntry={newEntry}/>
+          <UploadForm newEntries={newEntries}/>
         </div>
       </div>
     </div>

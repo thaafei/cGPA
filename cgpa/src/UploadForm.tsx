@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from 'axios'
 
 
-export default function UploadForm(newEntry){
+export default function UploadForm({newEntries}){
     const [file, setFile] = useState<File | null>(null)
 
     async function handleUpload(){
@@ -19,21 +19,14 @@ export default function UploadForm(newEntry){
             };
             try{
                 axios.post(url, formData, config).then((response) => {
-                    let entries = response.data
-                    update_entries(entries)
+                    let entries = response.data.message
+                    newEntries(entries)
                 })
             }catch{
                 console.log("error")
             }
         }
     };
-
-    function update_entries(entries){
-        for (let entry in entries){
-            newEntry(entry.course, entry.grade)
-        }
-        console.log("complete")
-    }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
