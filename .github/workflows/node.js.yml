@@ -27,6 +27,7 @@ jobs:
         cache-dependency-path: cgpa/package-lock.json
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - run: cd cgpa
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test
