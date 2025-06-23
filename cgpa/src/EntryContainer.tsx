@@ -18,35 +18,33 @@ export default function EntryContainer() {
     function newEntries(pdfEntries){
       pdfEntries.forEach((entry) =>  entry["id"] = getUID())
       editEntries(prevEntries => [...prevEntries, ...pdfEntries])
-      console.log(entries)
-      console.log("test")
     }
 
-    function newEntry({course, grade}) {
+    function newEntry() {
       setShowGrade(false)
-      editEntries(prevEntries => [
-        ...prevEntries,
-        { id: getUID(), course, grade }
-      ]);
+      editEntries(prevEntries => [...prevEntries, { id: getUID() }]);
     }
 
     const updateCourse = (id: number, value: string) => {
       setShowGrade(false)
       editEntries(
-        entries.map((entry) =>
-        entry.id === id ? { ...entry, course: value } : entry
-        )
+        entries.map((entry) => entry.id === id ? { ...entry, course: value } : entry)
       );
     };
 
     const updateGrade = (id: number, value: string) => {
       setShowGrade(false)
       editEntries(
-          entries.map((entry) =>
-          entry.id === id ? { ...entry, grade: value } : entry
-          )
+          entries.map((entry) => entry.id === id ? { ...entry, grade: value } : entry)
       );
     };
+
+    const updateCredit = (id: number, value: string) => {
+      setShowGrade(false)
+      editEntries(
+        entries.map((entry) => entry.id === id ? { ...entry, credit: value } : entry)
+      );
+    }
 
     const removeEntry = (id: number) => {
         setShowGrade(false)
@@ -86,8 +84,10 @@ export default function EntryContainer() {
             id={entry.id}
             course={entry.course}
             grade={entry.grade}
+            credit = {entry.credit}
             updateCourse={updateCourse}
             updateGrade={updateGrade}
+            updateCredit={updateCredit}
             onRemove={removeEntry}
           />
         ))}

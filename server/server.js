@@ -36,15 +36,16 @@ app.post("/calculate", (req, res) => {
     const { entries } = req.body
     let total_units = 0
     let total_grades = 0
+    console.log(entries)
     entries.forEach(entry => {
-        let unit_weight = entry.course[3]
+        let unit_weight = entry.credit
         let grade = gradeMap[entry.grade]
         total_grades += (unit_weight*grade)
         total_units += (unit_weight*12)
     });
     let cgpa = total_grades/total_units
-    let cgpa_as_twelve_scale = cgpa.toFixed(2)
-    let cgpa_as_four_scale = (cgpa*4).toFixed(2)
+    let cgpa_as_twelve_scale = (cgpa*12).toFixed(1)
+    let cgpa_as_four_scale = (cgpa*4).toFixed(1)
     res.json({four_scale: cgpa_as_four_scale, twelve_scale: cgpa_as_twelve_scale})
   })
 
@@ -62,7 +63,6 @@ app.post('/parse-transcript', upload.single("file"), (req, res) => {
 });
 
 function parseTranscript(transcript_string, res){
-  console.log("parsing transcript")
   let pattern = /(?=---\s*\d{4}\s+[A-Za-z]+(?:\/[A-Za-z]+)*\s*---)/;
   let semesters = transcript_string.split(pattern);
   semesters.shift();
@@ -71,34 +71,57 @@ function parseTranscript(transcript_string, res){
     let subresult = semester.split('\n');
     let first_course = true
     let course = ""
-    let credits = ""
+    let credit = ""
     let next_mark = false
-    console.log(semester)
     subresult.forEach(line => {
       if (first_course){
-        if (/[A-Z]{4,}\s\d[A-Za-z][A-Za-z0-9]\d[A-Za-z]?/.test(line)) {
-          course = line
-        }else if (/\d\.\d{2}\/\d\.\d{2}/.test(line)) {
-          credits = line
+        if (/[A-Z]{4,}\s\d[A-Za-z][A-Za-z0-9]\d[A-Za-z]?/.test(line) && !next_mark) {
+          course = line.trim()
+          return
+        }else if (/\d\.\d{2}\/\d\.\d{2}/.test(line) && !next_mark) {
+          credit = line.trim()
+          return
         }else if (line === "Grade"){
           next_mark = true
+          return
         }else if (next_mark){
-          let grade = line
-          result.push({ course, credits, grade })
           first_course = false
+          let grade = line.trim()
+          if (!gradeMap[grade]){
+            grade = ""
+          }
+          credit = credit.split(".")[0]
+          result.push({ course, credit, grade })
+          if (grade != ""){
+            return
+          }
         }
-      }else{
-        const line_pattern = /([A-Z]{4,}\s\d[A-Za-z][A-Za-z0-9]\d[A-Za-z]?)\s.*?(\d\.\d{2}\/\d\.\d{2})([A-Z+-]{1,4})?/
-        const match = line.match(line_pattern)
-        if (match) {
-          const course = match[1];
-          const credits = match[2];
-          const grade = match[3];
-          result.push({ course, credits, grade })
-        }
+      }
+      const line_pattern = /([A-Z]{4,}\s\d[A-Za-z][A-Za-z0-9]\d[A-Za-z]?)\s.*?(\d+\.\d{2}\/\d+\.\d{2})([A-Z+-]{1,4})?/
+      const match = line.match(line_pattern)
+      if (match) {
+        let course = (match[1] ? match[1].trim() : match[1])
+        let credit = (match[2] ? match[2].trim() : match[2])
+        let grade = (match[3] ? match[3].trim() : match[3])
+        credit = credit.split(".")[0]
+        result.push({ course, credit, grade })
       }
     });
   });
-  console.log("parsing complete")
-  res.json({message: result})
+  let cleanedResult = cleanupResults(result)
+  res.json(cleanedResult)
+}
+
+const empty_credit = ["0", "", undefined]
+function cleanupResults(result){
+  let cleanedResult = []
+  let disgardedResult = []
+  result.forEach((entry) => {
+    if (!( entry.credit in empty_credit)){
+      cleanedResult.push(entry)
+    }else{
+      disgardedResult.push(entry)
+    }
+  })
+  return { clean: cleanedResult, bad: disgardedResult}
 }

@@ -19,8 +19,8 @@ export default function UploadForm({newEntries}){
             };
             try{
                 axios.post(url, formData, config).then((response) => {
-                    let entries = response.data.message
-                    newEntries(entries)
+                    let clean_entries = response.data.clean
+                    newEntries(clean_entries)
                 })
             }catch{
                 console.log("error")
