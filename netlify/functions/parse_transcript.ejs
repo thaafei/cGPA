@@ -1,0 +1,74 @@
+export default async (req, res) => {
+    const storage = multer.memoryStorage(); 
+    const upload = multer({ storage: storage });
+    try {
+    const dataBuffer = req.file.buffer;
+    pdf(dataBuffer).then((result) => parseTranscript(result.text, res));
+  }catch{
+    res.json({message: "Error"})
+  }  
+};
+
+function parseTranscript(transcript_string, res){
+  let pattern = /(?=---\s*\d{4}\s+[A-Za-z]+(?:\/[A-Za-z]+)*\s*---)/;
+  let semesters = transcript_string.split(pattern);
+  semesters.shift();
+  let result = [];
+  semesters.forEach(semester => {
+    let subresult = semester.split('\n');
+    let first_course = true
+    let course = ""
+    let credit = ""
+    let next_mark = false
+    subresult.forEach(line => {
+      if (first_course){
+        if (/[A-Z]{4,}\s\d[A-Za-z][A-Za-z0-9]\d[A-Za-z]?/.test(line) && !next_mark) {
+          course = line.trim()
+          return
+        }else if (/\d\.\d{2}\/\d\.\d{2}/.test(line) && !next_mark) {
+          credit = line.trim()
+          return
+        }else if (line === "Grade"){
+          next_mark = true
+          return
+        }else if (next_mark){
+          first_course = false
+          let grade = line.trim()
+          if (!gradeMap[grade]){
+            grade = ""
+          }
+          credit = credit.split(".")[0]
+          result.push({ course, credit, grade })
+          if (grade != ""){
+            return
+          }
+        }
+      }
+      const line_pattern = /([A-Z]{4,}\s\d[A-Za-z][A-Za-z0-9]\d[A-Za-z]?)\s.*?(\d+\.\d{2}\/\d+\.\d{2})([A-Z+-]{1,4})?/
+      const match = line.match(line_pattern)
+      if (match) {
+        let course = (match[1] ? match[1].trim() : match[1])
+        let credit = (match[2] ? match[2].trim() : match[2])
+        let grade = (match[3] ? match[3].trim() : match[3])
+        credit = credit.split(".")[0]
+        result.push({ course, credit, grade })
+      }
+    });
+  });
+  let cleanedResult = cleanupResults(result)
+  return new Response(cleanedResult)
+}
+
+const empty_credit = ["0", "", undefined]
+function cleanupResults(result){
+  let cleanedResult = []
+  let disgardedResult = []
+  result.forEach((entry) => {
+    if (!( entry.credit in empty_credit)){
+      cleanedResult.push(entry)
+    }else{
+      disgardedResult.push(entry)
+    }
+  })
+  return { clean: cleanedResult, bad: disgardedResult }
+}

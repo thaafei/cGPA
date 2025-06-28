@@ -1,0 +1,32 @@
+const gradeMap = {
+  "A+": 12,
+  "A": 11,
+  "A-": 10,
+  "B+": 9,
+  "B": 8,
+  "B-": 7,
+  "C+": 6,
+  "C": 5,
+  "C-": 4,
+  "D+": 3,
+  "D": 2,
+  "D-": 1,
+  "F": 0
+}
+
+export default async (req, res) => {
+  const { entries } = req.body
+  let total_units = 0
+  let total_grades = 0
+  console.log(entries)
+  entries.forEach(entry => {
+    let unit_weight = entry.credit
+    let grade = gradeMap[entry.grade]
+    total_grades += (unit_weight*grade)
+    total_units += (unit_weight*12)
+  });
+  let cgpa = total_grades/total_units
+  let cgpa_as_twelve_scale = (cgpa*12).toFixed(1)
+  let cgpa_as_four_scale = (cgpa*4).toFixed(1)
+  return new Response({four_scale: cgpa_as_four_scale, twelve_scale: cgpa_as_twelve_scale})
+}
